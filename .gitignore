@@ -1,0 +1,9 @@
+# Ignore Target folder in Groovy
+Groovy/target/*
+
+# Ignore all files in Bash folder (exception right ahead)
+Bash/*
+
+# Except the extract script
+!Bash/extract
+!Bash/!README.md

@@ -1,0 +1,80 @@
+@Library('jenkins-library') _  // Load the shared library
+
+pipeline {
+    agent any
+
+    environment {
+        PROJECT_NAME = 'tase_assignment'
+        REPO_URL = 'https://github.com/ezrubaal/tase_assignment.git'
+        ARTIFACTORY_URL = 'https://example-company.jfrog.io/artifactory/tase-repo'
+        ARTIFACT_NAME = "tase_assignment-${env.BUILD_NUMBER}-${env.GIT_COMMIT}.tar.gz"
+        ARTIFACTORY_CREDENTIALS = 'artifactory-credentials'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Prepare Environment') {
+            steps {
+                script {
+                    prepareEnv(commitAuthor: env.GIT_AUTHOR_NAME,
+                               commitMessage: env.GIT_COMMIT,
+                               branchName: env.BRANCH_NAME,
+                               commitHash: env.GIT_COMMIT)
+                }
+            }
+        }
+
+        stage('Build Artifact') {
+            steps {
+                script {
+                    println "Building artifact..."
+                    sh '''
+                        mkdir -p target
+                        echo "This is a fake build process for demo purposes" > target/${ARTIFACT_NAME}
+                    '''
+                    println "Build complete!"
+                }
+            }
+        }
+
+        stage('Package Artifact') {
+            steps {
+                script {
+                    println "Packaging artifact..."
+                    sh '''
+                        tar -czf target/${ARTIFACT_NAME}.tar.gz -C target ${ARTIFACT_NAME}
+                    '''
+                    println "Packaging complete!"
+                }
+            }
+        }
+
+        stage('Upload to Artifactory') {
+            steps {
+                script {
+                    println "Uploading artifact to Artifactory..."
+                    sh '''
+                        curl -u $ARTIFACTORY_USER:$ARTIFACTORY_PASSWORD -T target/${ARTIFACT_NAME}.tar.gz \
+                        "$ARTIFACTORY_URL/$ARTIFACTORY_REPO/${ARTIFACT_NAME}.tar.gz"
+                    '''
+                    println "Upload complete!"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Build completed successfully!"
+        }
+        failure {
+            echo "Build failed! Check the logs."
+        }
+    }
+}

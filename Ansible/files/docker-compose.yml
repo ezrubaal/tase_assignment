@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  web:
+    image: python:3.9
+    container_name: flask
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "80:5000"
+    command: >
+      sh -c "pip install flask redis && python app.py"
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"

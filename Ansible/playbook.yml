@@ -1,0 +1,33 @@
+- name: Deploy Docker Compose App
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: Install Docker Compose
+      get_url:
+        url: "https://github.com/docker/compose/releases/download/v2.17.2/docker-compose-linux-x86_64"
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+
+    - name: Create application directory
+      file:
+        path: /home/ubuntu/app
+        state: directory
+        mode: '0755'
+
+    - name: Copy application files
+      copy:
+        src: files/
+        dest: /home/ubuntu/app/
+        mode: '0644'
+
+    - name: Start Docker Compose application
+      command: docker-compose -f /home/ubuntu/app/docker-compose.yml up -d
+      args:
+        chdir: /home/ubuntu/app
