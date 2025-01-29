@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   web:
-    image: python:3.9
+    image: python:3.12
     container_name: flask
     working_dir: /app
     volumes:
